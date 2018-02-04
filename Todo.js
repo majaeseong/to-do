@@ -1,5 +1,5 @@
 import React from "react";
-import {Text, View, TouchableOpacity, StyleSheet,Dimensions} from "react-native";
+import {Text, View, TouchableOpacity, StyleSheet,Dimensions, TextInput} from "react-native";
 
 const {height, width} = Dimensions.get("window");
 
@@ -9,18 +9,57 @@ export default class Todo extends React.Component{
 
     state={
         isEditing:false,
-        isCompleted:false
+        isCompleted:false,
+        todoValue:""
     }
-                                            //서클 스타일을 어레이로 만들어준다.
+                                           
     render(){
-        const {isCompleted} = this.state;
+        const {isCompleted, isEditing,todoValue} = this.state;
+        const {text} = this.props;
         return(
             <View style={styles.container}>
-                <TouchableOpacity onPress={this._toggleComplete}>
-                    <View style={[styles.circle, isCompleted?styles.completeCircle:styles.uncompleteCircle]}> 
+                <View style={styles.column}>
+                    <TouchableOpacity onPress={this._toggleComplete}>
+                        <View style={[styles.circle, isCompleted?styles.completeCircle:styles.uncompleteCircle]}> 
+                        </View>
+                    </TouchableOpacity>
+                    {isEditing?(
+                        <TextInput value={todoValue}
+                            style={[styles.input, styles.text, isCompleted?styles.completeText:styles.uncompleteText]}
+                            multiline={true}
+                            onChangeText={this._controlInput}
+                            returnKeyType={"done"}
+                            onBlur={this._finishEditing}/> //칸 밖을 클릭하면 종료
+                    ):(
+                        <Text style={[styles.text, isCompleted?styles.completeText:styles.uncompleteText]}>
+                            {text}
+                        </Text>
+                    )}
+                </View>
+                
+                {isEditing?(
+                    <View style={styles.actions}>
+                        <TouchableOpacity onPressOut={this._finishEditing}>
+                            <View style={styles.actionContainer}>
+                                <Text style={styles.actionText}>✅</Text>
+                            </View>
+                        </TouchableOpacity>
                     </View>
-                </TouchableOpacity>
-                <Text style={styles.text}>Hello </Text>
+                ):(
+                    <View style={styles.actions}>
+                        <TouchableOpacity onPressOut={this._startEditing}>
+                            <View style={styles.actionContainer}>
+                                <Text style={styles.actionText}>🖌</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <View style={styles.actionContainer}>
+                                <Text style={styles.actionText}>✂️</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                )}
+                
             </View>
         )
     }
@@ -33,6 +72,26 @@ export default class Todo extends React.Component{
         })
     }
 
+    _startEditing = () =>{
+        const {text} = this.props;
+        this.setState({
+            isEditing:true,
+            todoValue:text
+        })
+    }
+
+    _finishEditing = () =>{
+        this.setState({
+            isEditing:false
+        })
+    }
+
+    _controlInput = text =>{
+        this.setState({
+            todoValue:text
+        })
+    }
+
 }
 
 const styles= StyleSheet.create({
@@ -41,7 +100,8 @@ const styles= StyleSheet.create({
         borderBottomColor:"#bbb",
         borderBottomWidth:StyleSheet.hairlineWidth,
         flexDirection:"row",
-        alignItems:"center"
+        alignItems:"center",
+        justifyContent:"space-between"
       },
       circle:{
         width:30,
@@ -61,5 +121,29 @@ const styles= StyleSheet.create({
           fontSize:20,
           fontWeight:"600",
           marginVertical:20
-      }
+      },
+      completeText:{
+        color:"#bbb",
+        textDecorationLine:"line-through"
+      },
+    uncompleteText:{
+        color:"black"
+    },
+    column:{
+        flexDirection:"row",
+        alignItems:"center",
+        width: width/2,
+        justifyContent:"space-between"
+    },
+    actions:{
+        flexDirection:"row"
+    },
+    actionContainer:{
+        marginVertical:10,
+        marginHorizontal:10
+    },
+    input:{
+        marginVertical:15,
+        width:width/2
+    }
 })
